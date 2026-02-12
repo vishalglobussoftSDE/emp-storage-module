@@ -1,6 +1,46 @@
 import { Dropbox } from "dropbox";
+import axios from "axios";
 
-export const getDropboxClient = ({ access_token }) => {
+/**
+ * Generate Dropbox access_token using refresh_token
+ */
+export const getDropboxAccessToken = async ({
+  app_key,
+  app_secret,
+  refresh_token
+}) => {
+  const tokenUrl = "https://api.dropboxapi.com/oauth2/token";
+
+  const response = await axios.post(
+    tokenUrl,
+    new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token
+    }),
+    {
+      auth: {
+        username: app_key,
+        password: app_secret
+      },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    }
+  );
+
+  return response.data.access_token;
+};
+
+/**
+ * Create Dropbox client
+ */
+export const getDropboxClient = async ({ app_key, app_secret, refresh_token }) => {
+  const access_token = await getDropboxAccessToken({
+    app_key,
+    app_secret,
+    refresh_token
+  });
+
   return new Dropbox({ accessToken: access_token });
 };
 
@@ -13,7 +53,7 @@ export const uploadToDropbox = async ({ dbx, buffer, fileName }) => {
     mute: false
   });
 
-  return response.result; // { id, name, path_lower, ... }
+  return response.result;
 };
 
 export const downloadFromDropbox = async ({ dbx, path }) => {
@@ -21,7 +61,6 @@ export const downloadFromDropbox = async ({ dbx, path }) => {
 
   const fileData = response.result.fileBinary;
 
-  // convert to Buffer
   return Buffer.from(fileData);
 };
 

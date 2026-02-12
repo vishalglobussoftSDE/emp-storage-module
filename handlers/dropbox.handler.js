@@ -6,9 +6,13 @@ import {
 } from "../services/dropbox.service.js";
 
 export const handleDropbox = async (req) => {
-  const { access_token } = req.body;
+  const { app_key, app_secret, refresh_token } = req.body;
 
-  const dbx = getDropboxClient({ access_token });
+  const dbx = await getDropboxClient({
+    app_key,
+    app_secret,
+    refresh_token
+  });
 
   // 1) Upload
   const uploadedFile = await uploadToDropbox({

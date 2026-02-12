@@ -3,11 +3,13 @@ import { handleGoogleDrive } from "./googleDrive.handler.js";
 import { handleCloudinary } from "./cloudinary.handler.js";
 import { handleDropbox } from "./dropbox.handler.js";
 import { handleZohoWorkDrive } from "./zohoWorkDrive.handler.js";
+import {handleSftp} from "./sftp.handler.js";
 
 export const STORAGE_HANDLERS = {
   s3: handleS3,
   google_drive: handleGoogleDrive,
   cloudinary: handleCloudinary,
   dropbox: handleDropbox,
-  zoho_workdrive: handleZohoWorkDrive
+  zoho_workdrive: handleZohoWorkDrive,
+  sftp : handleSftp
 };
