@@ -5,7 +5,7 @@ import {
   DeleteObjectCommand
 } from "@aws-sdk/client-s3";
 
-// stream to buffer helper
+// stream -> buffer helper
 const streamToBuffer = async (stream) => {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -15,12 +15,11 @@ const streamToBuffer = async (stream) => {
   });
 };
 
-export const getS3Client = ({
-  access_key,
-  secret_access_key,
-  region,
-  api_end_point
-}) => {
+export const getS3Client = ({ access_key, secret_access_key, region, api_end_point }) => {
+  if (!access_key || !secret_access_key || !region) {
+    throw new Error("S3 credentials missing (access_key/secret_access_key/region)");
+  }
+
   const config = {
     region,
     credentials: {
@@ -38,13 +37,11 @@ export const getS3Client = ({
   return new S3Client(config);
 };
 
-export const uploadToS3 = async ({
-  s3,
-  bucket_name,
-  buffer,
-  fileName,
-  mimeType
-}) => {
+export const uploadToS3 = async ({ s3, bucket_name, buffer, fileName, mimeType }) => {
+  if (!s3) throw new Error("S3 client missing");
+  if (!bucket_name) throw new Error("bucket_name missing");
+  if (!buffer) throw new Error("Upload buffer missing");
+
   const command = new PutObjectCommand({
     Bucket: bucket_name,
     Key: fileName,
@@ -54,13 +51,14 @@ export const uploadToS3 = async ({
 
   await s3.send(command);
 
-  return {
-    Bucket: bucket_name,
-    Key: fileName
-  };
+  return { bucket: bucket_name, key: fileName };
 };
 
 export const downloadFromS3 = async ({ s3, bucket_name, key }) => {
+  if (!s3) throw new Error("S3 client missing");
+  if (!bucket_name) throw new Error("bucket_name missing");
+  if (!key) throw new Error("key missing");
+
   const command = new GetObjectCommand({
     Bucket: bucket_name,
     Key: key
@@ -68,13 +66,18 @@ export const downloadFromS3 = async ({ s3, bucket_name, key }) => {
 
   const response = await s3.send(command);
 
-  // response.Body is a stream in Node.js
-  const buffer = await streamToBuffer(response.Body);
+  if (!response?.Body) {
+    throw new Error("S3 download failed: empty body");
+  }
 
-  return buffer;
+  return await streamToBuffer(response.Body);
 };
 
 export const deleteFromS3 = async ({ s3, bucket_name, key }) => {
+  if (!s3) throw new Error("S3 client missing");
+  if (!bucket_name) throw new Error("bucket_name missing");
+  if (!key) throw new Error("key missing");
+
   const command = new DeleteObjectCommand({
     Bucket: bucket_name,
     Key: key

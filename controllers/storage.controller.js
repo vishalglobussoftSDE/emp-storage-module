@@ -1,9 +1,15 @@
+import fs from "fs";
+import path from "path";
 import { STORAGE_FORM_CONFIG } from "../configs/storageForm.config.js";
 import { STORAGE_HANDLERS } from "../handlers/index.js";
 
+/**
+ * Validate required fields based on selected storage type
+ */
 const validateFieldsFromConfig = (reqBody) => {
   const { select_storage_type } = reqBody;
-  //this is checking storage type is filled or not
+
+  // 1) storage type required
   if (!select_storage_type) {
     return {
       success: false,
@@ -12,7 +18,7 @@ const validateFieldsFromConfig = (reqBody) => {
     };
   }
 
-  // this is checking that selected storage type is in the array which is in the backend like for valid storage type 
+  // 2) storage type must exist in config
   const fieldsConfig = STORAGE_FORM_CONFIG[select_storage_type];
 
   if (!fieldsConfig) {
@@ -23,7 +29,7 @@ const validateFieldsFromConfig = (reqBody) => {
     };
   }
 
-  // storage_from_config is a object which val = array (suppose i select the drive  google_drive : [credentials1 , creadential2 , .... etc]) now checking each cred with loop 
+  // 3) required fields check
   for (const field of fieldsConfig) {
     const value = reqBody[field.name];
 
@@ -31,7 +37,7 @@ const validateFieldsFromConfig = (reqBody) => {
       return {
         success: false,
         field: field.name,
-        message: `${field.label} is required` 
+        message: `${field.label} is required`
       };
     }
   }
@@ -39,6 +45,9 @@ const validateFieldsFromConfig = (reqBody) => {
   return { success: true };
 };
 
+/**
+ * API 1: Only checks if all required fields are filled
+ */
 export const validateStorageData = (req, res) => {
   const validation = validateFieldsFromConfig(req.body);
 
@@ -52,8 +61,11 @@ export const validateStorageData = (req, res) => {
   });
 };
 
-
-export const testUploadStorage = async (req, res) => {
+/**
+ * API 2: Backend will pick a file from public folder and run:
+ * upload -> download -> delete
+ */
+export const testStorageOperations = async (req, res) => {
   try {
     // 1) validate fields from config
     const validation = validateFieldsFromConfig(req.body);
@@ -61,18 +73,9 @@ export const testUploadStorage = async (req, res) => {
       return res.status(400).json(validation);
     }
 
-    // 2) file check
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        field: "file",
-        message: "File is required (multipart/form-data)"
-      });
-    }
-
     const { select_storage_type } = req.body;
 
-    // 3) handler check
+    // 2) handler check
     const handler = STORAGE_HANDLERS[select_storage_type];
 
     if (!handler) {
@@ -83,10 +86,35 @@ export const testUploadStorage = async (req, res) => {
       });
     }
 
-    // 4) run handler (upload -> download -> delete)
-    const result = await handler(req);
+    // 3) Pick a test file from backend public folder
+    // You can change file name here
+    const testFilePath = path.join(process.cwd(), "public", "test.avif");
 
-    // if handler returns success false
+    if (!fs.existsSync(testFilePath)) {
+      return res.status(400).json({
+        success: false,
+        field: "public_file",
+        message: `Test file not found at: public/test.avif`
+      });
+    }
+
+    // 4) Create a fake file object (like multer)
+    // so your old handler can work without changes
+    const fileBuffer = fs.readFileSync(testFilePath);
+
+    const fakeReq = {
+      ...req,
+      file: {
+        originalname: "test.png",
+        mimetype: "image/png",
+        buffer: fileBuffer,
+        size: fileBuffer.length
+      }
+    };
+
+    // 5) run handler (upload -> download -> delete)
+    const result = await handler(fakeReq);
+
     if (!result?.success) {
       return res.status(400).json(result);
     }
@@ -95,8 +123,8 @@ export const testUploadStorage = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Upload test failed",
+      message: "Storage operations test failed",
       error: error.message
     });
   }
-}; 
+};

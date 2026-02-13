@@ -1,6 +1,11 @@
 import { v2 as cloudinary } from "cloudinary";
+import axios from "axios";
 
 export const getCloudinaryClient = ({ cloud_name, api_key, api_secret }) => {
+  if (!cloud_name || !api_key || !api_secret) {
+    throw new Error("Cloudinary credentials missing (cloud_name/api_key/api_secret)");
+  }
+
   cloudinary.config({
     cloud_name,
     api_key,
@@ -16,6 +21,9 @@ export const uploadToCloudinary = async ({
   fileName,
   folder
 }) => {
+  if (!cloudinaryClient) throw new Error("cloudinaryClient missing");
+  if (!buffer) throw new Error("Upload buffer missing");
+
   return new Promise((resolve, reject) => {
     cloudinaryClient.uploader
       .upload_stream(
@@ -33,16 +41,34 @@ export const uploadToCloudinary = async ({
   });
 };
 
+/**
+ * Download file bytes from Cloudinary URL
+ * Returns Buffer
+ */
 export const downloadFromCloudinary = async ({ cloudinaryUrl }) => {
-  // NOTE: Cloudinary direct download normally needs HTTP fetch
-  // But hum check ke liye simple URL return kar rahe.
-  return cloudinaryUrl;
+  if (!cloudinaryUrl) throw new Error("cloudinaryUrl missing");
+
+  const response = await axios.get(cloudinaryUrl, {
+    responseType: "arraybuffer"
+  });
+
+  return Buffer.from(response.data);
 };
 
-export const deleteFromCloudinary = async ({
-  cloudinaryClient,
-  public_id
-}) => {
-  await cloudinaryClient.uploader.destroy(public_id);
+/**
+ * Delete file from Cloudinary
+ */
+export const deleteFromCloudinary = async ({ cloudinaryClient, public_id }) => {
+  if (!cloudinaryClient) throw new Error("cloudinaryClient missing");
+  if (!public_id) throw new Error("public_id missing");
+
+  const result = await cloudinaryClient.uploader.destroy(public_id);
+
+  // Cloudinary returns:
+  // { result: "ok" } OR { result: "not found" }
+  if (result?.result !== "ok") {
+    throw new Error(`Cloudinary delete failed: ${result?.result}`);
+  }
+
   return true;
 };

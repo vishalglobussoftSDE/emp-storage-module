@@ -6,43 +6,76 @@ import {
 } from "../services/dropbox.service.js";
 
 export const handleDropbox = async (req) => {
-  const { app_key, app_secret, refresh_token } = req.body;
+  try {
+    const { app_key, app_secret, refresh_token } = req.body;
 
-  const dbx = await getDropboxClient({
-    app_key,
-    app_secret,
-    refresh_token
-  });
+    // safety
+    if (!req.file?.buffer) {
+      return {
+        success: false,
+        field: "file",
+        message: "Test file buffer is missing"
+      };
+    }
 
-  // 1) Upload
-  const uploadedFile = await uploadToDropbox({
-    dbx,
-    buffer: req.file.buffer,
-    fileName: `test-${Date.now()}-${req.file.originalname}`
-  });
+    const dbx = await getDropboxClient({
+      app_key,
+      app_secret,
+      refresh_token
+    });
 
-  // 2) Download check
-  const downloadedData = await downloadFromDropbox({
-    dbx,
-    path: uploadedFile.path_lower
-  });
+    const fileName = `test-${Date.now()}-${req.file.originalname}`;
 
-  const downloadedBytes =
-    downloadedData?.byteLength || downloadedData?.length || 0;
+    // 1) Upload
+    const uploadedFile = await uploadToDropbox({
+      dbx,
+      buffer: req.file.buffer,
+      fileName
+    });
 
-  // 3) Delete
-  await deleteFromDropbox({
-    dbx,
-    path: uploadedFile.path_lower
-  });
+    if (!uploadedFile?.path_lower) {
+      return {
+        success: false,
+        message: "Dropbox upload failed (path_lower not returned)"
+      };
+    }
 
-  return {
-    success: true,
-    message: "Upload -> Download -> Delete completed successfully",
-    storage: "dropbox",
-    uploaded_file_id: uploadedFile.id,
-    uploaded_file_name: uploadedFile.name,
-    downloaded_bytes: downloadedBytes,
-    deleted: true
-  };
+    // 2) Download check
+    const downloadedData = await downloadFromDropbox({
+      dbx,
+      path: uploadedFile.path_lower
+    });
+
+    let downloadedBytes = 0;
+
+    if (Buffer.isBuffer(downloadedData)) {
+      downloadedBytes = downloadedData.length;
+    } else if (downloadedData?.byteLength) {
+      downloadedBytes = downloadedData.byteLength;
+    } else if (downloadedData?.length) {
+      downloadedBytes = downloadedData.length;
+    }
+
+    // 3) Delete
+    await deleteFromDropbox({
+      dbx,
+      path: uploadedFile.path_lower
+    });
+
+    return {
+      success: true,
+      message: "Dropbox: Upload -> Download -> Delete completed successfully",
+      storage: "dropbox",
+      uploaded_file_id: uploadedFile.id,
+      uploaded_file_name: uploadedFile.name || fileName,
+      downloaded_bytes: downloadedBytes,
+      deleted: true
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Dropbox handler failed",
+      error: error.message
+    };
+  }
 };

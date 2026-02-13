@@ -6,51 +6,65 @@ import {
 } from "../services/s3.service.js";
 
 export const handleS3 = async (req) => {
-  const { access_key, secret_access_key, bucket_name, region, api_end_point } =
-    req.body;
+  try {
+    const { access_key, secret_access_key, bucket_name, region, api_end_point } = req.body;
 
-  const s3 = getS3Client({
-    access_key,
-    secret_access_key,
-    region,
-    api_end_point
-  });
+    if (!req.file?.buffer) {
+      return {
+        success: false,
+        field: "file",
+        message: "Test file buffer is missing"
+      };
+    }
 
-  // 1) Upload
-  const fileKey = `test-${Date.now()}-${req.file.originalname}`;
+    const s3 = getS3Client({
+      access_key,
+      secret_access_key,
+      region,
+      api_end_point
+    });
 
-  const uploadedFile = await uploadToS3({
-    s3,
-    bucket_name,
-    buffer: req.file.buffer,
-    fileName: fileKey,
-    mimeType: req.file.mimetype
-  });
+    const key = `test-${Date.now()}-${req.file.originalname}`;
 
-  // 2) Download check
-  const downloadedData = await downloadFromS3({
-    s3,
-    bucket_name,
-    key: uploadedFile.Key
-  });
+    // 1) Upload
+    const uploaded = await uploadToS3({
+      s3,
+      bucket_name,
+      buffer: req.file.buffer,
+      fileName: key,
+      mimeType: req.file.mimetype
+    });
 
-  const downloadedBytes =
-    downloadedData?.byteLength || downloadedData?.length || 0;
+    // 2) Download
+    const downloadedBuffer = await downloadFromS3({
+      s3,
+      bucket_name,
+      key: uploaded.key
+    });
 
-  // 3) Delete
-  await deleteFromS3({
-    s3,
-    bucket_name,
-    key: uploadedFile.Key
-  });
+    const downloadedBytes = downloadedBuffer.length;
 
-  return {
-    success: true,
-    message: "Upload -> Download -> Delete completed successfully",
-    storage: "s3",
-    uploaded_file_bucket: uploadedFile.Bucket,
-    uploaded_file_key: uploadedFile.Key,
-    downloaded_bytes: downloadedBytes,
-    deleted: true
-  };
+    // 3) Delete
+    await deleteFromS3({
+      s3,
+      bucket_name,
+      key: uploaded.key
+    });
+
+    return {
+      success: true,
+      message: "S3: Upload -> Download -> Delete completed successfully",
+      storage: "s3",
+      uploaded_bucket: uploaded.bucket,
+      uploaded_key: uploaded.key,
+      downloaded_bytes: downloadedBytes,
+      deleted: true
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "S3 handler failed",
+      error: error.message
+    };
+  }
 };
