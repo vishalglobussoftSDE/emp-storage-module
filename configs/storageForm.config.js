@@ -34,7 +34,7 @@ export const STORAGE_FORM_CONFIG = {
     { name: "app_key", label: "App Key", type: "text", required: true },
     { name: "app_secret", label: "App Secret", type: "password", required: true },
     { name: "refresh_token", label: "Refresh Token", type: "text", required: true },
-    { name: "redirect_url", label: "Redirect URL", type: "text", required: true },
+    { name: "redirect_url", label: "Redirect URL", type: "text", required: false },
     ...COMMON_FIELDS
   ],
 
@@ -42,7 +42,7 @@ export const STORAGE_FORM_CONFIG = {
     { name: "onedrive_client_id", label: "OneDrive Client ID", type: "text", required: true },
     { name: "onedrive_client_secret", label: "OneDrive Client Secret", type: "password", required: true },
     { name: "onedrive_refresh_token", label: "OneDrive Refresh Token", type: "text", required: true },
-    { name: "onedrive_redirect_url", label: "OneDrive Redirect URL", type: "text", required: true },
+    { name: "onedrive_redirect_url", label: "OneDrive Redirect URL", type: "text", required: false },
     { name: "tenant_id", label: "Tenant ID", type: "text", required: true },
     ...COMMON_FIELDS
   ],
@@ -58,7 +58,7 @@ export const STORAGE_FORM_CONFIG = {
   sftp: [
     { name: "username", label: "Username", type: "text", required: true },
     { name: "password", label: "Password", type: "password", required: true },
-    { name: "perm_key", label: "SFTP Permanent Key", type: "text", required: true },
+    { name: "perm_key", label: "SFTP Permanent Key", type: "text", required: false},
     { name: "host", label: "Host", type: "text", required: true },
     { name: "port", label: "Port", type: "number", required: true },
     { name: "sftp_path", label: "SFTP Path", type: "text", required: true },
