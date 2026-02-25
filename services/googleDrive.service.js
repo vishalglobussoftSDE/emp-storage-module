@@ -7,7 +7,6 @@ export const getGoogleDriveClient = ({ client_id, client_secret, refresh_token }
   }
 
   const oAuth2Client = new google.auth.OAuth2(client_id, client_secret);
-
   oAuth2Client.setCredentials({ refresh_token });
 
   return google.drive({
@@ -49,7 +48,6 @@ export const downloadFromGoogleDrive = async ({ drive, fileId }) => {
 
   return Buffer.from(response.data);
 };
-
 
 export const deleteFromGoogleDrive = async ({ drive, fileId }) => {
   if (!drive) throw new Error("Drive client missing");
