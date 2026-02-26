@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import {
   getDropboxClient,
   uploadToDropbox,
@@ -5,77 +7,172 @@ import {
   deleteFromDropbox
 } from "../services/dropbox.service.js";
 
-export const handleDropbox = async (req) => {
-  try {
-    const { app_key, app_secret, refresh_token } = req.body;
+let lastUploadedPath = null; // 🔥 store last uploaded file path
 
-    // safety
-    if (!req.file?.buffer) {
+const createDropboxFromReq = async (req) => {
+  const { app_key, app_secret, refresh_token } = req.body;
+
+  if (!app_key || !app_secret || !refresh_token) {
+    throw new Error("Missing Dropbox credentials");
+  }
+
+  return await getDropboxClient({
+    app_key,
+    app_secret,
+    refresh_token
+  });
+};
+
+export const dropboxHandler = {
+
+  // ✅ VERIFY
+  verify: async (req) => {
+    try {
+      const dbx = await createDropboxFromReq(req);
+
+      // simple API call to check auth
+      await dbx.usersGetCurrentAccount();
+
+      return {
+        success: true,
+        message: "Dropbox verified successfully"
+      };
+
+    } catch (error) {
       return {
         success: false,
-        field: "file",
-        message: "Test file buffer is missing"
+        message: "Dropbox verification failed",
+        error: error.message
       };
     }
+  },
 
-    const dbx = await getDropboxClient({
-      app_key,
-      app_secret,
-      refresh_token
-    });
+  // ✅ UPLOAD (Auto public/test.png)
+  upload: async (req) => {
+    try {
+      const dbx = await createDropboxFromReq(req);
 
-    const fileName = `test-${Date.now()}-${req.file.originalname}`;
+      const filePath = path.join(process.cwd(), "public", "test.png");
 
-    // 1) Upload
-    const uploadedFile = await uploadToDropbox({
-      dbx,
-      buffer: req.file.buffer,
-      fileName
-    });
+      if (!fs.existsSync(filePath)) {
+        return {
+          success: false,
+          message: "public/test.png not found"
+        };
+      }
 
-    if (!uploadedFile?.path_lower) {
+      const buffer = fs.readFileSync(filePath);
+      const fileName = `test-${Date.now()}.png`;
+
+      const uploadedFile = await uploadToDropbox({
+        dbx,
+        buffer,
+        fileName
+      });
+
+      if (!uploadedFile?.path_lower) {
+        return {
+          success: false,
+          message: "Dropbox upload failed (path not returned)"
+        };
+      }
+
+      lastUploadedPath = uploadedFile.path_lower; // 🔥 store for auto usage
+
+      return {
+        success: true,
+        message: "File uploaded successfully",
+        file_id: uploadedFile.id,
+        file_name: uploadedFile.name || fileName,
+        path: uploadedFile.path_lower
+      };
+
+    } catch (error) {
       return {
         success: false,
-        message: "Dropbox upload failed (path_lower not returned)"
+        message: "Dropbox upload failed",
+        error: error.message
       };
     }
+  },
 
-    // 2) Download check
-    const downloadedData = await downloadFromDropbox({
-      dbx,
-      path: uploadedFile.path_lower
-    });
+  // ✅ DOWNLOAD (Auto last uploaded)
+  download: async (req) => {
+    try {
+      if (!lastUploadedPath) {
+        return {
+          success: false,
+          message: "No file uploaded yet"
+        };
+      }
 
-    let downloadedBytes = 0;
+      const dbx = await createDropboxFromReq(req);
 
-    if (Buffer.isBuffer(downloadedData)) {
-      downloadedBytes = downloadedData.length;
-    } else if (downloadedData?.byteLength) {
-      downloadedBytes = downloadedData.byteLength;
-    } else if (downloadedData?.length) {
-      downloadedBytes = downloadedData.length;
+      const downloadedData = await downloadFromDropbox({
+        dbx,
+        path: lastUploadedPath
+      });
+
+      const downloadedBytes =
+        downloadedData?.byteLength ||
+        downloadedData?.length ||
+        0;
+
+      return {
+        success: true,
+        path: lastUploadedPath,
+        downloaded_bytes: downloadedBytes
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        message: "Dropbox download failed",
+        error: error.message
+      };
     }
+  },
 
-    // 3) Delete
-    await deleteFromDropbox({
-      dbx,
-      path: uploadedFile.path_lower
-    });
+  // ✅ DELETE (Auto last uploaded)
+  delete: async (req) => {
+    try {
+      if (!lastUploadedPath) {
+        return {
+          success: false,
+          message: "No file available to delete"
+        };
+      }
 
+      const dbx = await createDropboxFromReq(req);
+
+      await deleteFromDropbox({
+        dbx,
+        path: lastUploadedPath
+      });
+
+      const deletedPath = lastUploadedPath;
+      lastUploadedPath = null; // 🔥 reset after delete
+
+      return {
+        success: true,
+        message: "Last uploaded file deleted",
+        path: deletedPath
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        message: "Dropbox delete failed",
+        error: error.message
+      };
+    }
+  },
+
+  disconnect: async () => {
     return {
       success: true,
-      message: "Dropbox: Upload -> Download -> Delete completed successfully",
-      storage: "dropbox",
-      uploaded_file_id: uploadedFile.id,
-      uploaded_file_name: uploadedFile.name || fileName,
-      downloaded_bytes: downloadedBytes,
-      deleted: true
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Dropbox handler failed",
-      error: error.message
+      message: "Dropbox uses token-based auth (no persistent connection)"
     };
   }
+
 };

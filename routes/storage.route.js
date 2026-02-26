@@ -1,12 +1,18 @@
 import express from "express";
 import {
-  validateStorageData,
-  testStorageOperations
+  verifyStorage,
+  uploadStorage,
+  downloadStorage,
+  deleteStorage,
+  disconnectStorage
 } from "../controllers/storage.controller.js";
 
 const router = express.Router();
 
-router.post("/validate", validateStorageData);
-router.post("/test-operations", testStorageOperations);
+router.post("/verify", verifyStorage);
+router.post("/upload", uploadStorage);
+router.post("/download", downloadStorage);
+router.post("/delete", deleteStorage);
+router.post("/disconnect", disconnectStorage);
 
 export default router;

@@ -1,16 +1,16 @@
 import SMB2 from "smb2";
-import path from "path";
 
 export const getSmbClient = ({
   smb_host,
-  smb_port = 445,
   smb_share,
   smb_username,
   smb_password,
   smb_domain
 }) => {
   if (!smb_host || !smb_share || !smb_username || !smb_password) {
-    throw new Error("SMB credentials missing");
+    throw new Error(
+      "SMB credentials missing (host/share/username/password)"
+    );
   }
 
   return new SMB2({
@@ -18,7 +18,6 @@ export const getSmbClient = ({
     domain: smb_domain || "",
     username: smb_username,
     password: smb_password,
-    port: smb_port,
     autoCloseTimeout: 0
   });
 };

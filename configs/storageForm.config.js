@@ -59,7 +59,7 @@ export const STORAGE_FORM_CONFIG = {
   ],
   smb: [
     { name: "smb_host", label: "SMB Host", required: true },
-    { name: "smb_port", label: "SMB Port", required: true },
+    { name: "smb_port", label: "SMB Port", required: false },
     { name: "smb_share", label: "SMB Share Name", required: true },
     { name: "smb_username", label: "SMB Username", required: true },
     { name: "smb_password", label: "SMB Password", required: true },

@@ -8,6 +8,7 @@ export const connectFtp = async ({
   ftp_password
 }) => {
   const client = new Client();
+  console.log(client);
   client.ftp.verbose = true;
 
   await client.access({

@@ -1,19 +1,19 @@
-import { handleS3 } from "./s3.handler.js";
-import { handleGoogleDrive } from "./googleDrive.handler.js";
+import { s3Handler } from "./s3.handler.js";
+import { googleDriveHandler } from "./googleDrive.handler.js";
 import { handleCloudinary } from "./cloudinary.handler.js";
-import { handleDropbox } from "./dropbox.handler.js";
-import {handleSftp} from "./sftp.handler.js";
-import {handleWebDav} from "./webdav.handler.js";
-import { handleSmb } from "./smb.handler.js";
-import { handleFtp } from "./ftp.handler.js";
+import { dropboxHandler } from "./dropbox.handler.js";
+import {sftpHandler} from "./sftp.handler.js";
+import {webdavHandler} from "./webdav.handler.js";
+import { smbHandler } from "./smb.handler.js";
+import { ftpHandler } from "./ftp.handler.js";
 
 export const STORAGE_HANDLERS = {
-  s3: handleS3,
-  google_drive: handleGoogleDrive,
+  s3: s3Handler,
+  google_drive: googleDriveHandler,
   cloudinary: handleCloudinary,
-  dropbox: handleDropbox,
-  sftp : handleSftp,
-  webdav: handleWebDav,
-  smb: handleSmb,
-  ftp: handleFtp
+  dropbox: dropboxHandler,
+  sftp : sftpHandler,
+  webdav: webdavHandler,
+  smb: smbHandler,
+  ftp: ftpHandler
 };
