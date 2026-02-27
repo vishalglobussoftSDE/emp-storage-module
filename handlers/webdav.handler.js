@@ -29,7 +29,7 @@ const createWebDavFromReq = (req) => {
 
 export const webdavHandler = {
 
-  // ✅ VERIFY
+  // VERIFY
   verify: async (req) => {
     try {
       const client = createWebDavFromReq(req);
@@ -51,7 +51,7 @@ export const webdavHandler = {
     }
   },
 
-  // ✅ UPLOAD (Auto public/test.png)
+  // UPLOAD (Auto public/test.png)
   upload: async (req) => {
     try {
       const { webdav_path } = req.body;
@@ -84,7 +84,7 @@ export const webdavHandler = {
         filePath: fullPath
       });
 
-      lastUploadedPath = fullPath; // 🔥 store for auto usage
+      lastUploadedPath = fullPath; //store for auto usage
 
       return {
         success: true,
@@ -101,7 +101,7 @@ export const webdavHandler = {
     }
   },
 
-  // ✅ DOWNLOAD (Auto last uploaded)
+  // DOWNLOAD (Auto last uploaded)
   download: async (req) => {
     try {
       if (!lastUploadedPath) {
@@ -137,7 +137,7 @@ export const webdavHandler = {
     }
   },
 
-  // ✅ DELETE (Auto last uploaded)
+  // DELETE (Auto last uploaded)
   delete: async (req) => {
     try {
       if (!lastUploadedPath) {
@@ -155,7 +155,7 @@ export const webdavHandler = {
       });
 
       const deletedPath = lastUploadedPath;
-      lastUploadedPath = null; // 🔥 reset after delete
+      lastUploadedPath = null; // reset after delete
 
       return {
         success: true,

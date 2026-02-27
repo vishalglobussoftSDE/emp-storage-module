@@ -8,7 +8,7 @@ import {
   deleteFromGoogleDrive
 } from "../services/googleDrive.service.js";
 
-let lastUploadedFileId = null; // 🔥 store last uploaded file id
+let lastUploadedFileId = null; // store last uploaded file id
 
 const createDriveFromReq = (req) => {
   const { client_id, client_secret, refresh_token } = req.body;
@@ -26,7 +26,7 @@ const createDriveFromReq = (req) => {
 
 export const googleDriveHandler = {
 
-  // ✅ VERIFY
+  // VERIFY
   verify: async (req) => {
     try {
       const drive = createDriveFromReq(req);
@@ -46,7 +46,7 @@ export const googleDriveHandler = {
     }
   },
 
-  // ✅ UPLOAD (Auto public/test.png)
+  // UPLOAD (Auto public/test.png)
   upload: async (req) => {
     try {
       const drive = createDriveFromReq(req);
@@ -69,7 +69,7 @@ export const googleDriveHandler = {
         mimeType: "image/png"
       });
 
-      lastUploadedFileId = uploaded.id; // 🔥 store id
+      lastUploadedFileId = uploaded.id; // store id
 
       return {
         success: true,
@@ -87,7 +87,7 @@ export const googleDriveHandler = {
     }
   },
 
-  // ✅ DOWNLOAD (Auto last uploaded)
+  // DOWNLOAD (Auto last uploaded)
   download: async (req) => {
     try {
       if (!lastUploadedFileId) {
@@ -119,7 +119,7 @@ export const googleDriveHandler = {
     }
   },
 
-  // ✅ DELETE (Auto last uploaded)
+  // DELETE (Auto last uploaded)
   delete: async (req) => {
     try {
       if (!lastUploadedFileId) {
@@ -137,7 +137,7 @@ export const googleDriveHandler = {
       });
 
       const deletedId = lastUploadedFileId;
-      lastUploadedFileId = null; // 🔥 reset after delete
+      lastUploadedFileId = null; // reset after delete
 
       return {
         success: true,
@@ -154,7 +154,7 @@ export const googleDriveHandler = {
     }
   },
 
-  // ✅ DISCONNECT
+  // DISCONNECT
   disconnect: async (req) => {
     try {
       const { refresh_token } = req.body;

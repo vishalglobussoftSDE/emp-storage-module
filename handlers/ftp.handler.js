@@ -7,7 +7,7 @@ import {
   deleteFromFtp
 } from "../services/ftp.service.js";
 
-let lastUploadedFile = null; // 🔥 store last uploaded file name
+let lastUploadedFile = null; //  store last uploaded file name
 
 const createFtpFromReq = async (req) => {
   const { ftp_host, ftp_port, ftp_username, ftp_password } = req.body;
@@ -26,7 +26,7 @@ const createFtpFromReq = async (req) => {
 
 export const ftpHandler = {
 
-  // ✅ VERIFY
+  //  VERIFY
   verify: async (req) => {
     try {
       const client = await createFtpFromReq(req);
@@ -70,7 +70,7 @@ export const ftpHandler = {
         fileName
       });
 
-      lastUploadedFile = fileName; // 🔥 save for auto delete
+      lastUploadedFile = fileName; //  save for auto delete
 
       await client.close();
 
@@ -89,7 +89,7 @@ export const ftpHandler = {
     }
   },
 
-  // ✅ DOWNLOAD (Auto last uploaded)
+  // DOWNLOAD (Auto last uploaded)
   download: async (req) => {
     try {
       if (!lastUploadedFile) {
@@ -123,7 +123,7 @@ export const ftpHandler = {
     }
   },
 
-  // ✅ DELETE (Auto last uploaded)
+  // DELETE (Auto last uploaded)
   delete: async (req) => {
     try {
       if (!lastUploadedFile) {
@@ -143,7 +143,7 @@ export const ftpHandler = {
       await client.close();
 
       const deletedFile = lastUploadedFile;
-      lastUploadedFile = null; // 🔥 reset after delete
+      lastUploadedFile = null; // reset after delete
 
       return {
         success: true,

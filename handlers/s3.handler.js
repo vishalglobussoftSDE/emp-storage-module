@@ -7,7 +7,7 @@ import {
   deleteFromS3
 } from "../services/s3.service.js";
 
-let lastUploadedKey = null; // 🔥 store last uploaded key
+let lastUploadedKey = null; // store last uploaded key
 
 const createS3FromReq = (req) => {
   const { access_key, secret_access_key, region, api_end_point } = req.body;
@@ -26,7 +26,7 @@ const createS3FromReq = (req) => {
 
 export const s3Handler = {
 
-  // ✅ VERIFY
+  //  VERIFY
   verify: async (req) => {
     try {
       const { bucket_name } = req.body;
@@ -57,7 +57,7 @@ export const s3Handler = {
     }
   },
 
-  // ✅ UPLOAD (Auto public/test.png)
+  // UPLOAD (Auto public/test.png)
   upload: async (req) => {
     try {
       const { bucket_name } = req.body;
@@ -91,7 +91,7 @@ export const s3Handler = {
         mimeType: "image/png"
       });
 
-      lastUploadedKey = uploaded.key; // 🔥 store for auto usage
+      lastUploadedKey = uploaded.key; //store for auto usage
 
       return {
         success: true,
@@ -109,7 +109,7 @@ export const s3Handler = {
     }
   },
 
-  // ✅ DOWNLOAD (Auto last uploaded)
+  // DOWNLOAD (Auto last uploaded)
   download: async (req) => {
     try {
       const { bucket_name } = req.body;
@@ -152,7 +152,7 @@ export const s3Handler = {
     }
   },
 
-  // ✅ DELETE (Auto last uploaded)
+  // DELETE (Auto last uploaded)
   delete: async (req) => {
     try {
       const { bucket_name } = req.body;

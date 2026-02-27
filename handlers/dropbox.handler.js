@@ -7,7 +7,7 @@ import {
   deleteFromDropbox
 } from "../services/dropbox.service.js";
 
-let lastUploadedPath = null; // 🔥 store last uploaded file path
+let lastUploadedPath = null; 
 
 const createDropboxFromReq = async (req) => {
   const { app_key, app_secret, refresh_token } = req.body;
@@ -25,7 +25,7 @@ const createDropboxFromReq = async (req) => {
 
 export const dropboxHandler = {
 
-  // ✅ VERIFY
+  // VERIFY
   verify: async (req) => {
     try {
       const dbx = await createDropboxFromReq(req);
@@ -47,7 +47,7 @@ export const dropboxHandler = {
     }
   },
 
-  // ✅ UPLOAD (Auto public/test.png)
+  //  UPLOAD (Auto public/test.png)
   upload: async (req) => {
     try {
       const dbx = await createDropboxFromReq(req);
@@ -77,7 +77,7 @@ export const dropboxHandler = {
         };
       }
 
-      lastUploadedPath = uploadedFile.path_lower; // 🔥 store for auto usage
+      lastUploadedPath = uploadedFile.path_lower; //store for auto usage
 
       return {
         success: true,
@@ -96,7 +96,7 @@ export const dropboxHandler = {
     }
   },
 
-  // ✅ DOWNLOAD (Auto last uploaded)
+  //  DOWNLOAD (Auto last uploaded)
   download: async (req) => {
     try {
       if (!lastUploadedPath) {
@@ -133,7 +133,7 @@ export const dropboxHandler = {
     }
   },
 
-  // ✅ DELETE (Auto last uploaded)
+  //  DELETE (Auto last uploaded)
   delete: async (req) => {
     try {
       if (!lastUploadedPath) {

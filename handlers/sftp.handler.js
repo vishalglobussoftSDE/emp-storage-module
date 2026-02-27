@@ -27,7 +27,7 @@ const createSftpFromReq = async (req) => {
 
 export const sftpHandler = {
 
-  // ✅ VERIFY
+  // VERIFY
   verify: async (req) => {
     try {
       const sftp = await createSftpFromReq(req);
@@ -47,7 +47,7 @@ export const sftpHandler = {
     }
   },
 
-  // ✅ UPLOAD (Auto public/test.png)
+  // UPLOAD (Auto public/test.png)
   upload: async (req) => {
     try {
       const { sftp_path } = req.body;
@@ -101,7 +101,7 @@ export const sftpHandler = {
     }
   },
 
-  // ✅ DOWNLOAD (Auto last uploaded)
+  //DOWNLOAD (Auto last uploaded)
   download: async (req) => {
     try {
       if (!lastUploadedRemotePath) {
@@ -138,7 +138,7 @@ export const sftpHandler = {
     }
   },
 
-  // ✅ DELETE (Auto last uploaded)
+  // DELETE (Auto last uploaded)
   delete: async (req) => {
     try {
       if (!lastUploadedRemotePath) {

@@ -7,7 +7,7 @@ import {
   deleteFromSmb
 } from "../services/smb.service.js";
 
-let lastUploadedPath = null; // 🔥 store last uploaded file path
+let lastUploadedPath = null; // store last uploaded file path
 
 const createSmbFromReq = (req) => {
   const {
@@ -35,7 +35,7 @@ const createSmbFromReq = (req) => {
 
 export const smbHandler = {
 
-  // ✅ VERIFY
+  // VERIFY
   verify: async (req) => {
     try {
       const client = createSmbFromReq(req);
@@ -58,7 +58,7 @@ export const smbHandler = {
     }
   },
 
-  // ✅ UPLOAD (Auto public/test.png)
+  // UPLOAD (Auto public/test.png)
   upload: async (req) => {
     try {
       const client = createSmbFromReq(req);
@@ -82,7 +82,7 @@ export const smbHandler = {
         filePath: remotePath
       });
 
-      lastUploadedPath = remotePath; // 🔥 store
+      lastUploadedPath = remotePath; //store
 
       return {
         success: true,
